@@ -235,7 +235,7 @@ def create_table(
     auth=DEFAULT_AUTH,
     bucket=None,
     expect_error=False,
-    database_name = "default"
+    database_name="default",
 ):
     auth_params = ",".join(auth)
     bucket = started_cluster.minio_bucket if bucket is None else bucket
@@ -683,10 +683,7 @@ def test_multiple_tables_meta_mismatch(started_cluster):
             },
         )
     except QueryRuntimeException as e:
-        assert (
-            "Existing table metadata in ZooKeeper differs in columns"
-            in str(e)
-        )
+        assert "Existing table metadata in ZooKeeper differs in columns" in str(e)
         failed = True
 
     assert failed is True
@@ -1903,8 +1900,12 @@ def test_replicated(started_cluster):
     files_path = f"{table_name}_data"
     files_to_generate = 1000
 
-    node1.query("CREATE DATABASE r ENGINE=Replicated('/clickhouse/databases/replicateddb', 'shard1', 'node1')")
-    node2.query("CREATE DATABASE r ENGINE=Replicated('/clickhouse/databases/replicateddb', 'shard1', 'node2')")
+    node1.query(
+        "CREATE DATABASE r ENGINE=Replicated('/clickhouse/databases/replicateddb', 'shard1', 'node1')"
+    )
+    node2.query(
+        "CREATE DATABASE r ENGINE=Replicated('/clickhouse/databases/replicateddb', 'shard1', 'node2')"
+    )
 
     create_table(
         started_cluster,
@@ -1915,7 +1916,7 @@ def test_replicated(started_cluster):
         additional_settings={
             "keeper_path": keeper_path,
         },
-        database_name = "r",
+        database_name="r",
     )
 
     total_values = generate_random_files(
@@ -1923,15 +1924,24 @@ def test_replicated(started_cluster):
     )
 
     for node in [node1, node2]:
-        assert "processing_threads_num = 16" in node.query(f"SHOW CREATE TABLE r.{table_name}")
+        assert "processing_threads_num = 16" in node.query(
+            f"SHOW CREATE TABLE r.{table_name}"
+        )
         node.restart_clickhouse()
-        assert "processing_threads_num = 16" in node.query(f"SHOW CREATE TABLE r.{table_name}")
+        assert "processing_threads_num = 16" in node.query(
+            f"SHOW CREATE TABLE r.{table_name}"
+        )
 
     create_mv(node1, f"r.{table_name}", dst_table_name)
     create_mv(node2, f"r.{table_name}", dst_table_name)
 
     def get_count():
-        return int(node1.query(f"SELECT count() FROM clusterAllReplicas(cluster, default.{dst_table_name})"))
+        return int(
+            node1.query(
+                f"SELECT count() FROM clusterAllReplicas(cluster, default.{dst_table_name})"
+            )
+        )
+
     expected_rows = files_to_generate
     for _ in range(20):
         if expected_rows == get_count():
