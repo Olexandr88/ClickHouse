@@ -226,6 +226,13 @@ namespace Crypto
         error:
             if (pFile)
                 fclose(pFile);
+            if (*ppKey)
+            {
+                if constexpr (std::is_same_v<K, EVPPKey>)
+                    EVP_PKEY_free(*ppKey);
+                else if constexpr (std::is_same_v<K, EC_KEY>)
+                    EC_KEY_free(*ppKey);
+            }
             throw OpenSSLException("EVPKey::loadKey(string)");
         }
 
@@ -287,6 +294,13 @@ namespace Crypto
         error:
             if (pBIO)
                 BIO_free(pBIO);
+            if (*ppKey)
+            {
+                if constexpr (std::is_same_v<K, EVPPKey>)
+                    EVP_PKEY_free(*ppKey);
+                else if constexpr (std::is_same_v<K, EC_KEY>)
+                    EC_KEY_free(*ppKey);
+            }
             throw OpenSSLException("EVPKey::loadKey(stream)");
         }
 
